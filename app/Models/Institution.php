@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Aws\DynamoDb\DynamoDbClient;
+use App\Services\DynamoDbService;
 
 class Institution extends Model
 {
@@ -11,15 +12,9 @@ class Institution extends Model
 
     protected static function getDynamoDbClient()
     {
-        return new DynamoDbClient([
-            'region' => env('AWS_DEFAULT_REGION', 'us-west-2'),
-            'version' => 'latest',
-            'endpoint' => env('DYNAMODB_LOCAL_ENDPOINT', 'http://localhost:5000'),
-            'credentials' => [
-                'key' => env('AWS_ACCESS_KEY_ID'),
-                'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            ],
-        ]);
+        
+        $dynamoDbService = app(DynamoDbService::class); //IoC para obtener la instancia del servicio
+        return $dynamoDbService->getClient(); 
     }
 
     public static function createTable()

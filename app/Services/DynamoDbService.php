@@ -21,6 +21,11 @@ class DynamoDbService
         ]);
     }
 
+    public function getClient()
+    {
+        return $this->client;
+    }
+
     public function putItem($tableName, $item)
     {
         try {
