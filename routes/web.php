@@ -9,6 +9,7 @@ Route::get('/', function () {
 
 Route::get('debtor/upload', [DebtorController::class, 'showUploadForm']);
 Route::post('debtor/uploadFile', [DebtorController::class, 'processFile'])->name('debtor.process');
+Route::get('/debtor/show', [DebtorController::class, 'show'])->name('debtor.show');
 
 Route::post('test', function (Request $request) {
     return response()->json(['status' => 'success']);

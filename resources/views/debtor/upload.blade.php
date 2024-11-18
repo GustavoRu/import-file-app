@@ -34,6 +34,7 @@
                             <div class="alert alert-success mt-3">
                                 {{ session('success') }}
                             </div>
+                            <a href="{{ route('debtor.show') }}" class="btn btn-primary mt-3">Ver Deudores</a>
                         @endif
 
                         @if ($errors->any())

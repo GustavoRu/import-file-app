@@ -47,11 +47,29 @@ class DynamoDbService
                 'PutRequest' => ['Item' => $item],
             ];
         }, $items);
-
-        return $this->client->batchWriteItem([
+    
+        $result = $this->client->batchWriteItem([
             'RequestItems' => [
                 $tableName => $requestItems,
             ],
         ]);
+    
+        // Verificar si hubo elementos que no se pudieron insertar
+        if (isset($result['UnprocessedItems']) && count($result['UnprocessedItems']) > 0) {
+            // Si hay ítems no procesados, puedes intentar reinsertarlos o gestionar el error
+            dd('Unprocessed items: ', $result['UnprocessedItems']);
+        }
+    
+        return $result;
     }
+
+    public function scanItems($tableName)
+{
+    $result = $this->client->scan([
+        'TableName' => $tableName,
+    ]);
+
+    return $result['Items'] ?? [];
+}
+
 }
