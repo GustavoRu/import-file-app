@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use Aws\DynamoDb\DynamoDbClient;
+use Aws\DynamoDb\Exception\DynamoDbException;
 
 class DynamoDbService
 {
@@ -21,23 +22,23 @@ class DynamoDbService
     }
 
     public function putItem($tableName, $item)
-{
-    try {
-        return $this->client->putItem([
-            'TableName' => $tableName,
-            'Item' => $item,
-        ]);
-    } catch (\Aws\Exception\AwsException $e) {
-        \Log::error('Error al insertar el item en DynamoDB', [
-            'table' => $tableName,
-            'item' => $item,
-            'error_message' => $e->getMessage(),
-            'error_code' => $e->getAwsErrorCode(),
-        ]);
+    {
+        try {
+            return $this->client->putItem([
+                'TableName' => $tableName,
+                'Item' => $item,
+            ]);
+        } catch (\Aws\Exception\AwsException $e) {
+            \Log::error('Error al insertar el item en DynamoDB', [
+                'table' => $tableName,
+                'item' => $item,
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getAwsErrorCode(),
+            ]);
 
-        throw $e;
+            throw $e;
+        }
     }
-}
 
 
     public function batchWriteItems($tableName, $items)
@@ -47,29 +48,37 @@ class DynamoDbService
                 'PutRequest' => ['Item' => $item],
             ];
         }, $items);
-    
+
         $result = $this->client->batchWriteItem([
             'RequestItems' => [
                 $tableName => $requestItems,
             ],
         ]);
-    
+
         // Verificar si hubo elementos que no se pudieron insertar
         if (isset($result['UnprocessedItems']) && count($result['UnprocessedItems']) > 0) {
             // Si hay ítems no procesados, puedes intentar reinsertarlos o gestionar el error
             dd('Unprocessed items: ', $result['UnprocessedItems']);
         }
-    
+
         return $result;
     }
 
     public function scanItems($tableName)
-{
-    $result = $this->client->scan([
-        'TableName' => $tableName,
-    ]);
+    {
+        try {
+            $result = $this->client->scan([
+                'TableName' => $tableName,
+            ]);
+            return $result['Items'] ?? [];
+        } catch (DynamoDbException $e) {
+            if ($e->getAwsErrorCode() === 'ResourceNotFoundException') {
+                return [];
+            }
 
-    return $result['Items'] ?? [];
-}
+            // Relanzar la excepción si es otro error
+            throw $e;
+        }
+    }
 
 }

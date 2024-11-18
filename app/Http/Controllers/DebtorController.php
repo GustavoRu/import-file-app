@@ -15,12 +15,11 @@ class DebtorController extends Controller
 
     public function show()
     {
-        // Obtener los deudores desde DynamoDB
+        // Obtener los deudores e instituciones desde DynamoDB
         $dynamoDb = new DynamoDbService();
         $debtors = $dynamoDb->scanItems('Debtors');
         $institutions = $dynamoDb->scanItems('Institutions');
-        
-        // Pasar los deudores a la vista
+
         return view('debtor.show', compact('debtors', 'institutions'));
     }
 
@@ -38,13 +37,16 @@ class DebtorController extends Controller
 
         $debtors = [];
         $institutions = [];
+
         // Crear tablas si no existen
-        $this->createTables();// esto podria haber sido un seeder
+        // esto podria haber sido un seeder
+        $this->createTables();
+
         try {
             foreach ($fileContent as $line) {
                 $cuit = (int) trim(substr($line, 13, 11));
-                $situation = (int) trim(substr($line, 26, 2));
-                $loanAmount = (float) str_replace(',', '.', trim(substr($line, 28, 12)));
+                $situation = (int) trim(substr($line, 27, 2));
+                $loanAmount = (float) str_replace(',', '.', trim(substr($line, 29, 12)));
                 $institution_code = (int) trim(substr($line, 0, 5));
 
                 if (!isset($debtors[$cuit])) {
@@ -126,9 +128,7 @@ class DebtorController extends Controller
     private function createTables()
     {
         try {
-            // Crear tabla Debtors
             Debtor::createTable();
-            // Crear tabla Institutions
             Institution::createTable();
         } catch (\Aws\Exception\AwsException $e) {
             throw new \Exception('Error al crear las tablas: ' . $e->getMessage());

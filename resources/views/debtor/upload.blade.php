@@ -1,3 +1,5 @@
+@extends('layouts.app')
+@section('content')
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,7 +12,7 @@
 </head>
 
 <body class="bg-light">
-
+    
     <div class="container py-5">
         <div class="row justify-content-center align-items-center">
             <div class="col-md-6">
@@ -59,3 +61,4 @@
 </body>
 
 </html>
+@endsection

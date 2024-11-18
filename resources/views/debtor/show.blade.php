@@ -21,6 +21,7 @@
         </tbody>
     </table>
 
+    <div class="mt-2">
     <h2>Instituciones</h2>
     <table id="institutionTable" class="table table-striped table-bordered">
         <thead>
@@ -38,6 +39,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 @endsection
 
 @section('scripts')
@@ -52,6 +54,13 @@
                 "columnDefs": [
                     { "type": "num", "targets": [2, 1] }, // Define que las columnas 1 y 2 son numéricas para ordenar correctamente
                 ]
+            });
+
+            $('#institutionTable').DataTable({
+                "paging": true,
+                "ordering": true,
+                "order": [[0, 'asc']],
+                "pageLength": 10,
             });
         });
     </script>
