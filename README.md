@@ -64,3 +64,51 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+
+# Proyecto Laravel con DynamoDB
+
+Proyecto desarrollado con Laravel 11 que utiliza DynamoDB como base de datos no relacional. A continuación, se presentan los pasos necesarios para configurar y ejecutar el proyecto en tu máquina local.
+
+---
+
+# Clonar el repositorio
+git clone <URL_DEL_REPOSITORIO>
+cd <NOMBRE_DEL_PROYECTO>
+
+## Requisitos previos
+
+Asegúrate de tener instaladas las siguientes herramientas:
+
+1. **PHP 8.2 o superior** .
+2. **Composer** (Administrador de dependencias para PHP).
+3. **Node.js** (y npm o yarn para manejar dependencias front-end).
+4. **Java Runtime Environment (JRE)** para ejecutar DynamoDB Local.
+5. **DynamoDB Local** (emulador de DynamoDB).
+
+---
+
+## Instalación
+composer install
+
+
+## Configurar DynamoDb local
+1. abrir terminal
+2. 'sudo apt update'
+3. 'sudo apt install default-jre -y'
+4. verificar version de java: 'java -version'
+5. crear carpeta contenedora: 'mkdir ~/dynamodb-local
+6. cd ~/dynamodb-local'
+7. wget https://s3.us-west-2.amazonaws.com/dynamodb-local/dynamodb_local_latest.zip
+8. unzip -v UnZip 6.00 of 20 April 2009, by Debian. Original by Info-ZIP. 
+9. unzip dynamodb_local_latest.zip Archive:  dynamodb_local_latest.zip
+10. java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb -port 5000
+
+## Ejecución
+1. Asegúrarse de que **DynamoDB Local** esté corriendo. Esto debe estar activo en el puerto `5000`. Podes hacer esto con: 'lsof -i :5000'
+2. Ejecuta el servidor de desarrollo de Laravel con el siguiente comando:
+    ```bash
+    php artisan serve
+    ```
+    Esto levantará la aplicación en `http://127.0.0.1:8000/`.
