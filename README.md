@@ -112,3 +112,5 @@ composer install
     php artisan serve
     ```
     Esto levantará la aplicación en `http://127.0.0.1:8000/`.
+    
+Nota: se incluye el .env en la raiz bao el nombre de .env.test
