@@ -26,10 +26,10 @@ class DebtorController extends Controller
     public function processFile(Request $request)
     {
         // Validar que se subió un archivo
-        // $request->validate([
-        //     'file' => 'required|mimes:txt|max:10240', // Asegurarse de que sea un archivo TXT
-        // ]);
-
+        $request->validate([
+            'file' => 'required|file|max:10240',
+        ]);
+        
         // Obtener el archivo
         $file = $request->file('file');
 
@@ -71,41 +71,58 @@ class DebtorController extends Controller
             }
 
             $dynamoDb = new DynamoDbService();
-            // Guardar deudores en DynamoDB
-            foreach ($debtors as $debtorData) {
-                if (!isset($debtorData['cuit']) || !isset($debtorData['worst_situation']) || !isset($debtorData['loan_sum'])) {
-                    dd("Faltan campos requeridos para el deudor: " . json_encode($debtorData));
-                }
-                $dynamoDb->putItem('Debtors', [
-                    'cuit' => ['N' => (string) $debtorData['cuit']],
-                    'worst_situation' => ['N' => (string) $debtorData['worst_situation']],
-                    'loan_sum' => ['N' => (string) $debtorData['loan_sum']],
-                ]);
-            }
+            // Guardar deudores en DynamoDB, opcion para insertar de a uno
+            // foreach ($debtors as $debtorData) {
+            //     if (!isset($debtorData['cuit']) || !isset($debtorData['worst_situation']) || !isset($debtorData['loan_sum'])) {
+            //         dd("Faltan campos requeridos para el deudor: " . json_encode($debtorData));
+            //     }
+            //     $dynamoDb->putItem('Debtors', [
+            //         'cuit' => ['N' => (string) $debtorData['cuit']],
+            //         'worst_situation' => ['N' => (string) $debtorData['worst_situation']],
+            //         'loan_sum' => ['N' => (string) $debtorData['loan_sum']],
+            //     ]);
+            // }
 
             // Agrupar los deudores en lotes de 25
-            // $chunks = array_chunk($debtors, 25);
+            $chunks = array_chunk($debtors, 25); // Dividir en lotes de 25 elementos
 
-            // foreach ($chunks as $chunk) {
-            //     $requestItems = [];
-            //     foreach ($chunk as $debtorData) {
-            //         if (!isset($debtorData['cuit']) || !isset($debtorData['worst_situation']) || !isset($debtorData['loan_sum'])) {
-            //             dd("Faltan campos requeridos para el deudor: " . json_encode($debtorData));
-            //         }
-            //         $requestItems = [
-            //             'PutRequest' => [
-            //                 'Item' => [
-            //                     'cuit' => ['N' => (string) $debtorData['cuit']],
-            //                     'worst_situation' => ['N' => (string) $debtorData['worst_situation']],
-            //                     'loan_sum' => ['N' => (string) $debtorData['loan_sum']],
-            //                 ]
-            //             ]
-            //         ];
-            //     }
+            foreach ($chunks as $chunk) {
+                $requestItems = [];
 
-            //     // Usar batchWriteItem para insertar el lote
-            //     $dynamoDb->batchWriteItems('Debtors', $requestItems);
-            // }
+                foreach ($chunk as $debtorData) {
+                    // Validar campos requeridos
+                    if (!isset($debtorData['cuit'], $debtorData['worst_situation'], $debtorData['loan_sum'])) {
+                        \Log::warning('Faltan campos requeridos para el deudor', [
+                            'debtor_data' => $debtorData,
+                        ]);
+                        continue; // Saltamos este deudor aunque todos deberian cumplir
+                    }
+
+                    // Agrego al arreglo de RequestItems
+                    $requestItems[] = [
+                        'PutRequest' => [
+                            'Item' => [
+                                'cuit' => ['N' => (string) $debtorData['cuit']],
+                                'worst_situation' => ['N' => (string) $debtorData['worst_situation']],
+                                'loan_sum' => ['N' => (string) $debtorData['loan_sum']],
+                            ],
+                        ],
+                    ];
+                }
+
+                if (!empty($requestItems)) {
+                    //batchWriteItems para insertar
+                    try {
+                        $dynamoDb->batchWriteItems('Debtors', $requestItems);
+                    } catch (\Exception $e) {
+                        \Log::error('Error al insertar un lote de deudores', [
+                            'error_message' => $e->getMessage(),
+                            'chunk' => $chunk,
+                        ]);
+                    }
+                }
+            }
+
 
             // Guardar instituciones en DynamoDB
             foreach ($institutions as $institutionData) {

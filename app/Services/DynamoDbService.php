@@ -48,26 +48,49 @@ class DynamoDbService
 
     public function batchWriteItems($tableName, $items)
     {
-        $requestItems = array_map(function ($item) {
-            return [
-                'PutRequest' => ['Item' => $item],
-            ];
-        }, $items);
+        // dd("items",$items);
+        try {
+            // Construir los elementos de la solicitud
+            // $requestItems = array_map(function ($item) {
+            //     dd($item);
+            //     return [
+            //         'PutRequest' => ['Item' => $item],
+            //     ];
+            // }, $items);
 
-        $result = $this->client->batchWriteItem([
-            'RequestItems' => [
-                $tableName => $requestItems,
-            ],
-        ]);
+            // Ejecutar la operación BatchWriteItem
+            $result = $this->client->batchWriteItem([
+                'RequestItems' => [
+                    $tableName => $items,
+                ],
+            ]);
 
-        // Verificar si hubo elementos que no se pudieron insertar
-        if (isset($result['UnprocessedItems']) && count($result['UnprocessedItems']) > 0) {
-            // Si hay ítems no procesados, puedes intentar reinsertarlos o gestionar el error
-            dd('Unprocessed items: ', $result['UnprocessedItems']);
+            // Verificar si hubo elementos que no se pudieron insertar
+            if (isset($result['UnprocessedItems']) && count($result['UnprocessedItems']) > 0) {
+                \Log::warning('Unprocessed items found during batch write', [
+                    'table' => $tableName,
+                    'unprocessed_items' => $result['UnprocessedItems'],
+                ]);
+
+                // Opcional: Implementar lógica para reintentar o manejar los ítems no procesados
+                // Por ahora, solo devolvemos los ítems no procesados
+                return $result['UnprocessedItems'];
+            }
+
+            return $result;
+        } catch (\Aws\Exception\AwsException $e) {
+            \Log::error('Error during batch write operation in DynamoDB', [
+                'table' => $tableName,
+                'items' => $items,
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getAwsErrorCode(),
+            ]);
+
+            // Re-lanzar la excepción para manejarla más arriba si es necesario
+            throw $e;
         }
-
-        return $result;
     }
+
 
     public function scanItems($tableName)
     {

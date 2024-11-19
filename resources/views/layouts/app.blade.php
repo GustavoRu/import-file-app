@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi aplicación</title>
+    <title>Import File App</title>
     
     
     <!-- Agregar Bootstrap CSS -->
@@ -16,7 +16,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Mi Aplicación</a>
+            <a class="navbar-brand" href="#">Import File App</a>
             <ul class="navbar-nav">
                 <li class="nav-item"><a class="nav-link" href="{{ url('/debtor/upload') }}">Inicio</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url('/debtor/show') }}">Deudores</a></li>
